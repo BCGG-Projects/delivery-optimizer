@@ -1,8 +1,8 @@
-# delivery-optimizer Werehouse_Logic
+Werehouse_Logic
 
-Branch that is responsible for:
+# Branch that is responsible for:
 
-# define with points want the goods to be delivered to them and some points want boolean 1 | 0, and total weight
+#define with points want the goods to be delivered to them and some points want boolean 1 | 0, and total weight
 
 #created the size of the goods to be be delivered or collected (between 100kg and 200kg);
 
