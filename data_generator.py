@@ -66,13 +66,14 @@ class DataGenerator:
                 goods[selected_good] += weight
                 remaining_weight -= weight
 
-            client = {
-                "id": client_id,
-                **coordinates,
-                "type": delivery_type,
-                "goods": goods,
-            }
-            self.clients.append(client)
+            self.clients.append(
+                {
+                    "id": client_id,
+                    **coordinates,
+                    "type": delivery_type,
+                    "goods": goods,
+                }
+            )
 
     def generate(self) -> dict[str, list[dict]]:
         self.generate_warehouses()
