@@ -1,10 +1,4 @@
 import random
-import json
-from typing import List, Dict
-
-
-def to_json(data: Dict) -> str:
-    return json.dumps(data, indent=2, ensure_ascii=False)
 
 
 class DataGenerator:
@@ -29,7 +23,7 @@ class DataGenerator:
         self.vehicles = []
         self.cat_vehicle_id = None
 
-    def generate_coordinates(self) -> Dict[str, int]:
+    def generate_coordinates(self) -> dict[str, int]:
         return {
             "x": random.randint(0, self.coordinate_range),
             "y": random.randint(0, self.coordinate_range),
@@ -48,13 +42,14 @@ class DataGenerator:
             capacity = self.vehicle_types[vehicle_type]
             assigned_warehouse = random.choice(self.warehouses)["id"]
 
-            vehicle = {
-                "id": vehicle_id,
-                "type": vehicle_type,
-                "capacity": capacity,
-                "warehouse_id": assigned_warehouse,
-            }
-            self.vehicles.append(vehicle)
+            self.vehicles.append(
+                {
+                    "id": vehicle_id,
+                    "type": vehicle_type,
+                    "capacity": capacity,
+                    "warehouse_id": assigned_warehouse,
+                }
+            )
 
     def generate_clients(self):
         for i in range(self.num_clients):
@@ -79,7 +74,7 @@ class DataGenerator:
             }
             self.clients.append(client)
 
-    def generate(self) -> Dict[str, List[Dict]]:
+    def generate(self) -> dict[str, list[dict]]:
         self.generate_warehouses()
         self.generate_clients()
         self.generate_vehicles()

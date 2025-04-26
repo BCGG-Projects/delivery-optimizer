@@ -1,4 +1,5 @@
-from data_generator import DataGenerator, to_json
+from data_generator import DataGenerator
+from utils import to_json
 
 if __name__ == "__main__":
     generator = DataGenerator()
