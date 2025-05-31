@@ -23,6 +23,10 @@ class DataGenerator:
         self.vehicles = []
         self.cat_vehicle_id = None
 
+    def distribute_weight(self, total_weight, parts):
+        cuts = sorted([0] + [random.randint(0, total_weight) for _ in range(parts - 1)] + [total_weight])
+        return [cuts[i+1] - cuts[i] for i in range(parts)]
+
     def generate_coordinates(self) -> dict[str, int]:
         return {
             "x": random.randint(0, self.coordinate_range),
@@ -56,15 +60,17 @@ class DataGenerator:
             client_id = f"C{i}"
             coordinates = self.generate_coordinates()
             delivery_type = random.choice(["delivery", "pickup"])
-            total_weight = random.randint(100, 200)
-            goods = {good: 0 for good in self.goods_types}
-            remaining_weight = total_weight
+        
+            total_weight = random.randint(100, 200) if delivery_type == "delivery" else random.randint(-200, -100)
 
-            while remaining_weight > 0:
-                selected_good = random.choice(self.goods_types)
-                weight = random.randint(1, remaining_weight)
-                goods[selected_good] += weight
-                remaining_weight -= weight
+            num_goods = random.randint(1, len(self.goods_types))
+            selected_goods_types = random.sample(self.goods_types, num_goods)
+
+            goods_distribution = self.distribute_weight(abs(total_weight), len(selected_goods_types))
+
+            goods = {}
+            for good_type, good_weight in zip(selected_goods_types, goods_distribution):
+                goods[good_type] = good_weight if total_weight > 0 else -good_weight
 
             self.clients.append(
                 {
