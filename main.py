@@ -1,7 +1,21 @@
 from data_generator import DataGenerator
-from utils import to_json
+from route_planner import RoutePlanner
+from visualisation import plot_solution
+
+
+def main():
+    generator = DataGenerator()
+    data = generator.generate()
+
+    warehouses = data['warehouses']
+    clients = data['clients']
+    vehicles = data['vehicles']
+
+    planner = RoutePlanner(warehouses, clients, vehicles)
+    best_solution = planner.plan_routes()
+
+    plot_solution(warehouses, vehicles, best_solution)
+
 
 if __name__ == "__main__":
-    generator = DataGenerator()
-    input_data = generator.generate()
-    print(to_json(input_data))
+    main()

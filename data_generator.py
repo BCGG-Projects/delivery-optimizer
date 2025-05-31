@@ -5,7 +5,7 @@ class DataGenerator:
     def __init__(
         self,
         num_warehouses: int = 5,
-        num_clients: int = 20,
+        num_clients: int = random.randint(500,1000),
         min_vehicles: int = 3,
         max_vehicles: int = 6,
         coordinate_range: int = 100,
@@ -72,6 +72,7 @@ class DataGenerator:
                     **coordinates,
                     "type": delivery_type,
                     "goods": goods,
+                    "visited": False
                 }
             )
 
