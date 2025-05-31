@@ -1,95 +1,92 @@
 import random
 
-
 class DataGenerator:
-    def __init__(
-        self,
-        num_warehouses: int = 5,
-        num_clients: int = random.randint(500,1000),
-        min_vehicles: int = 3,
-        max_vehicles: int = 6,
-        coordinate_range: int = 100,
-    ):
-        self.num_warehouses = num_warehouses
-        self.num_clients = num_clients
-        self.num_vehicles = random.randint(min_vehicles, max_vehicles)
-        self.coordinate_range = coordinate_range
+    """
+    Generates warehouses, clients, and vehicles.
+    """
 
-        self.vehicle_types = {"green": 1000, "blue": 1500, "red": 2000}
-        self.goods_types = ["oranges", "uranium", "tuna"]
-
-        self.warehouses = []
-        self.clients = []
-        self.vehicles = []
-        self.cat_vehicle_id = None
-
-    def distribute_weight(self, total_weight, parts):
-        cuts = sorted([0] + [random.randint(0, total_weight) for _ in range(parts - 1)] + [total_weight])
-        return [cuts[i+1] - cuts[i] for i in range(parts)]
-
-    def generate_coordinates(self) -> dict[str, int]:
-        return {
-            "x": random.randint(0, self.coordinate_range),
-            "y": random.randint(0, self.coordinate_range),
-        }
-
-    def generate_warehouses(self):
-        self.warehouses = [
-            {"id": f"W{i}", **self.generate_coordinates()}
-            for i in range(self.num_warehouses)
+    def __init__(self,
+                 n_warehouses=5,
+                 n_clients=500,
+                 n_vehicles=6,
+                 coord_range=(0, 100),
+                 total_demand_range=(100, 200)):
+        self.n_warehouses = n_warehouses
+        self.n_clients = n_clients
+        self.n_vehicles = n_vehicles
+        self.coord_min, self.coord_max = coord_range
+        self.demand_min, self.demand_max = total_demand_range
+        self.good_types = ["oranges", "uranium", "tuna"]
+        self.vehicle_types = [
+            {"type": "green", "capacity": 1000.0},
+            {"type": "blue",  "capacity": 1500.0},
+            {"type": "red",   "capacity": 2000.0},
         ]
 
-    def generate_vehicles(self):
-        for i in range(self.num_vehicles):
-            vehicle_id = f"V{i}"
-            vehicle_type = random.choice(list(self.vehicle_types.keys()))
-            capacity = self.vehicle_types[vehicle_type]
-            assigned_warehouse = random.choice(self.warehouses)["id"]
-
-            self.vehicles.append(
-                {
-                    "id": vehicle_id,
-                    "type": vehicle_type,
-                    "capacity": capacity,
-                    "warehouse_id": assigned_warehouse,
-                }
-            )
+    def generate_warehouses(self):
+        """
+        Returns a list of warehouses:
+        [{'id': int, 'x': float, 'y': float}, ...]
+        """
+        warehouses = []
+        for wid in range(self.n_warehouses):
+            x = random.uniform(self.coord_min, self.coord_max)
+            y = random.uniform(self.coord_min, self.coord_max)
+            warehouses.append({"id": wid, "x": x, "y": y})
+        return warehouses
 
     def generate_clients(self):
-        for i in range(self.num_clients):
-            client_id = f"C{i}"
-            coordinates = self.generate_coordinates()
-            delivery_type = random.choice(["delivery", "pickup"])
-        
-            total_weight = random.randint(100, 200) if delivery_type == "delivery" else random.randint(-200, -100)
+        """
+        Returns a list of clients:
+        [{'id': int, 'x': float, 'y': float, 'demand': {good: float, ...}, 'is_pickup': bool}, ...]
+        """
+        clients = []
+        for cid in range(self.n_clients):
+            x = random.uniform(self.coord_min, self.coord_max)
+            y = random.uniform(self.coord_min, self.coord_max)
+            total = random.uniform(self.demand_min, self.demand_max)
+            cuts = sorted([random.uniform(0, total) for _ in range(len(self.good_types) - 1)])
+            parts = []
+            prev = 0.0
+            for cut in cuts:
+                parts.append(cut - prev)
+                prev = cut
+            parts.append(total - prev)
+            demand_vector = {self.good_types[i]: parts[i] for i in range(len(self.good_types))}
+            is_pickup = random.choice([True, False])
+            if is_pickup:
+                demand_vector = {g: -amt for g, amt in demand_vector.items()}
+            clients.append({
+                "id": cid,
+                "x": x,
+                "y": y,
+                "demand": demand_vector,
+                "is_pickup": is_pickup
+            })
+        return clients
 
-            num_goods = random.randint(1, len(self.goods_types))
-            selected_goods_types = random.sample(self.goods_types, num_goods)
+    def generate_vehicles(self):
+        """
+        Returns a list of vehicles:
+        [{'id': int, 'type': str, 'capacity': float, 'warehouse_id': int}, ...]
+        """
+        vehicles = []
+        for vid in range(self.n_vehicles):
+            vt = random.choice(self.vehicle_types)
+            vehicles.append({
+                "id": vid,
+                "type": vt["type"],
+                "capacity": vt["capacity"],
+                "warehouse_id": random.randrange(self.n_warehouses)
+            })
+        return vehicles
 
-            goods_distribution = self.distribute_weight(abs(total_weight), len(selected_goods_types))
-
-            goods = {}
-            for good_type, good_weight in zip(selected_goods_types, goods_distribution):
-                goods[good_type] = good_weight if total_weight > 0 else -good_weight
-
-            self.clients.append(
-                {
-                    "id": client_id,
-                    **coordinates,
-                    "type": delivery_type,
-                    "goods": goods,
-                    "visited": False
-                }
-            )
-
-    def generate(self) -> dict[str, list[dict]]:
-        self.generate_warehouses()
-        self.generate_clients()
-        self.generate_vehicles()
-
+    def generate(self):
+        """
+        Returns dict with keys 'warehouses', 'clients', 'vehicles'
+        """
         return {
-            "warehouses": self.warehouses,
-            "clients": self.clients,
-            "vehicles": self.vehicles,
-            "cat_vehicle": self.cat_vehicle_id,
+            "warehouses": self.generate_warehouses(),
+            "clients": self.generate_clients(),
+            "vehicles": self.generate_vehicles()
         }
