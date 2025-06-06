@@ -1,1 +1,4 @@
 black>=25.1.0
+numpy~=1.26.1
+ortools~=9.12.4544
+matplotlib~=3.8.0
